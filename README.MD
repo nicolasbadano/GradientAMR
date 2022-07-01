@@ -74,9 +74,14 @@ dynamicRefineFvMeshCoeffs
     // If value < unrefineLevel unrefine
     unrefineLevel   10;
 
+    // Refine cells only up to maxRefinement levels
+    maxRefinement   2;
+
     ...
 }
 ```
+
+The mesh is dynamically refined when the magnitude of the velocity gradient exceeds 30 1/s, and is unrefined when it goes below 10 1/s.
 
 ## Results
 
