@@ -1,6 +1,6 @@
-# GradientRefinement
+# GradientAMR
 
-This project shows how to use the gradient of flow variables as a criteria to command automatic refinement of the computational mesh for OpenFOAM simulations.
+This project shows how to use the gradient of flow variables as a criteria to control Adaptive Mesh Refinement (AMR) for OpenFOAM simulations.
 
 ## Getting Started
 
