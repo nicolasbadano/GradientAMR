@@ -1,61 +1,17 @@
-/*--------------------------------*- C++ -*----------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  8
-     \\/     M anipulation  |
-\*---------------------------------------------------------------------------*/
-FoamFile
-{
-    version     2.0;
-    format      ascii;
-    class       dictionary;
-    location    "system";
-    object      controlDict;
-}
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+# GradientRefinement
 
-application     pimpleFoam;
+This project shows how to use the gradient of flow variables as a criteria to command automatic refinement of the computational mesh for OpenFOAM simulations.
 
-startFrom       latestTime;
+## Getting Started
 
-startTime       0;
+* Run the `prepare.sh` to generate the mesh and setup the simulation.
+* Then run the case with `pimpleFoam`
 
-stopAt          endTime;
+## How it works
 
-endTime         3;
+The following coded function object in `controlDict` creates a field which, in each timestep, contains the magnitude of the velocity gradient (which is a tensor):
 
-deltaT          0.0001;
-
-writeControl    adjustableRunTime;
-
-writeInterval   0.01;
-
-purgeWrite      0;
-
-writeFormat     binary;
-
-writePrecision  12;
-
-writeCompression off;
-
-timeFormat      general;
-
-timePrecision   12;
-
-runTimeModifiable yes;
-
-adjustTimeStep  on;
-
-maxCo           0.9;
-maxAlphaCo      0.9;
-
-maxDeltaT       1;
-
-libs            ();
-
-functions
-{
+```
     calcGradient
     {
         libs        ("libutilityFunctionObjects.so");
@@ -96,6 +52,40 @@ functions
             Info << " max velocityGradientMag " << max(velocityGradientMag) << nl;
         #};
     }
-}
+```
 
-// ************************************************************************* //
+That field is defined as refinement criteria on `dynamicMeshDict`:
+
+```
+dynamicFvMesh   dynamicRefineFvMesh;
+
+dynamicRefineFvMeshCoeffs
+{
+    // How often to refine
+    refineInterval  2;
+
+    // Field to be refinement on
+    field           velocityGradientMag;
+
+    // Refine field inbetween lower..upper
+    lowerRefineLevel 30;
+    upperRefineLevel 1e6;
+
+    // If value < unrefineLevel unrefine
+    unrefineLevel   10;
+
+    ...
+}
+```
+
+## Results
+
+[![Watch the video](https://img.youtube.com/vi/_Wj_OJbqhTM/default.jpg)](https://youtu.be/_Wj_OJbqhTM)
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details
+
+## Author
+
+Nicolás Diego Badano (https://www.linkedin.com/in/nicolas-diego-badano/)
