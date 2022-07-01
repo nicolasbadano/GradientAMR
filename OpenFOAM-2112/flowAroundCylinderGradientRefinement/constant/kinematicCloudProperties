@@ -1,0 +1,107 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.0.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      kinematicCloudProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+solution
+{
+    active true; // if tracking is active
+    coupled false; // if source terms are calculated.
+    transient yes; // if solution is transient
+    cellValueSourceCorrection off;
+
+    interpolationSchemes
+    {
+        rho   cell; // uses cell values for force calculations, you also
+        U     cell; // have the option to use cellPoint which interpolates
+        mu    cell; // value based on neighboring cells
+    }
+
+    averagingMethod basic;
+
+    integrationSchemes
+    {
+        U     Euler; // integration method for velocity equation
+    }
+}
+
+constantProperties
+{
+    parcelTypeId 1;
+    rhoMin           1e-15;
+    minParcelMass    1e-15;
+    rho0             1000; // density of particle
+    youngsModulus    1e8; // Young’s Modulus
+    poissonsRatio    0.35; // Poisson’s ratio
+}
+
+subModels
+{
+    particleForces
+    {
+        sphereDrag;
+    }
+
+    injectionModels
+    {
+
+        myInjection
+        {
+            type patchInjection;        // injection model
+            parcelBasisType fixed;      // basis of particle per parcel calculation
+            patchName inlet;            // injection patch name
+            patch inlet;                // use this for OpenFOAM-v1912
+            U0 (2 0 0);                 // initial velocity of parcels
+            nParticle 2;                // particles per parcel, used if parcelBasisTyps is fixed
+            parcelsPerSecond 1000;
+            sizeDistribution
+            {
+                type fixedValue;
+                fixedValueDistribution
+                {
+                   value 0.000101;      // diameter of particles
+                }
+            }
+            flowRateProfile constant 1;
+            massTotal 0;                // total mass to inject, not used in this settings
+            SOI 0.01;                      // start of injection
+            duration 20;                // duration of injection
+        }
+    }
+
+
+    patchInteractionModel localInteraction;
+    localInteractionCoeffs
+    {
+        patches
+        (
+            "(sides|top|bottom|cylinder)"
+            {
+                type rebound;
+                e 1;                    // normal restitution coefficient
+                mu 0;                   // tangential restitution coefficient
+            }
+            "(inlet|outlet)"
+            {
+                type escape;
+            }
+        );
+    }
+    dispersionModel none;
+    stochasticCollisionModel none;
+    surfaceFilmModel none;
+    collisionModel none;
+}
+
+// ************************************************************************* //
